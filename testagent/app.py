@@ -77,35 +77,6 @@ RED+'''  .oNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 RED+'''     c0WMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWN0o,              ''' + RESET_SEQ,
 ]
 
-
-
-ARTLINESOLD = [
-RED+'''                                                             .lkKWMWNKx:.                    ''' + RESET_SEQ,
-RED+'''                                                          ;xXMMMMMMMMMMMMKd'                 ''' + RESET_SEQ,
-RED+'''                                                       .dWMMW0          KMMMXl.              ''' + RESET_SEQ,
-RED+'''                                                      xMMM0:''' + GRAY + '''   0xdkkxx0'''+RED+'''   cXMMWl             ''' + RESET_SEQ,
-RED+'''                                         ..,,;,'.   .XMMK,'''+ GRAY + '''   0X0x     0XKc'''+RED+'''  ;NMM0.           ''' + RESET_SEQ,
-RED+'''                                     ,o0WMMMMMMMMMXkNMMd'''+ GRAY + '''    0Xx         dKX'''+RED+'''   OMMK           ''' + RESET_SEQ,
-RED+'''                  .;okKXNNX0kl'   .oNMMMXOdc::clx0WMMMk '''+ GRAY + '''  OXd'''+WHITE+'''    _____'''+GRAY+'''   lKN   '''+RED+'''0MMd          ''' + RESET_SEQ,
-RED+'''                c0MMMMWXKKXWMMMWkdWMMKc.           ,dK.'''+GRAY+'''   MO     '''+WHITE+'''|'''+GRAY+'''        xM   '''+RED+'''\'MMW          ''' + RESET_SEQ,
-RED+'''              :NMMWx;.      .:OMMMMX;                     '''+GRAY+'''W0l    '''+WHITE+'''|   w    '''+GRAY+'''kM    '''+RED+'''WMMk.        ''' + RESET_SEQ,
-RED+'''             kMMNc             .dWO                        '''+GRAY+'''Wk    '''+WHITE+'''|---T'''+GRAY+'''   xNd'''+RED+'''    ;OMMMO.      ''' + RESET_SEQ,
-RED+'''            xMMX.                .                          '''+GRAY+'''XKx  '''+WHITE+'''|   | '''+GRAY+'''KNc       '''+RED+'''.kMMWc      ''' + RESET_SEQ,
-RED+'''           'MMW.                                              '''+GRAY+'''x0XK00KXKx'''+RED+'''            :WMMl    ''' + RESET_SEQ,
-RED+'''           dMMk                                                  '''+WHITE+'''|   |'''+RED+'''               ;MMM    ''' + RESET_SEQ,
-RED+'''     .cdkOONMMk                                                  '''+WHITE+'''|'''+RED+'''                    xMMO   ''' + RESET_SEQ,
-RED+'''  .oXMMMMMMMMMN  '''+WHITE+'''                                                               '''+RED+'''      ,MMW   ''' + RESET_SEQ,
-RED+''' ;WMMXl.   .,o0: '''+WHITE+'''                                                               '''+RED+'''      'MMW   ''' + RESET_SEQ,
-RED+''';MMMl            '''+WHITE+'''             TEST BASED CERTIFICATION ENVIRONMENT              '''+RED+'''      lMM0   ''' + RESET_SEQ,
-RED+'''XMMl             '''+WHITE+'''             TEST AGENT  version 1.1 - April 2015              '''+RED+'''     .WMM;   ''' + RESET_SEQ,
-RED+'''WMM'             '''+WHITE+'''    Patrizio Tufarolo <patrizio.tufarolo@studenti.unimi.it>    '''+RED+'''    .XMMx    ''' + RESET_SEQ,
-RED+'''0MMd             '''+WHITE+'''                                                               '''+RED+'''   cWMMd     ''' + RESET_SEQ,
-RED+''''WMMd                                                                           .cXMMK,      ''' + RESET_SEQ,
-RED+''' ;NMMNd;....................................................................,cdKMMM0:        ''' + RESET_SEQ,
-RED+'''  .oNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWOl.          ''' + RESET_SEQ,
-RED+'''     c0WMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWN0o,              ''' + RESET_SEQ,
-]
-
 worker.BANNER = '\n'.join(ARTLINES) + "\n" + worker.BANNER + "\n"
 import threading
 
@@ -140,7 +111,7 @@ class TestAgent(tornado.web.Application):
         self.pool = self.pool_executor_cls(max_workers=self.max_workers)
         self.events.start()
         self.listen(self.options.port, address=self.options.address,
-                    ssl_options=self.ssl_options, xheaders=self.options.xheaders)
+                    ssl_options=self.ssl_options, xheaders=True)
         self.worker_thread.start()
         self.io_loop.start()
         self.started = True

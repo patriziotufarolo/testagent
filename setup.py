@@ -55,9 +55,6 @@ setup(
     entry_points={
         'console_scripts': [
             'testagent = testagent.__main__:main',
-        ],
-        'celery.commands': [
-            'testagent = testagent.command:TestAgentCommand',
         ]
     }
 )

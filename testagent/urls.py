@@ -10,6 +10,7 @@ Date: 20/04/15
 
 from testagent.api import events
 from testagent.api import tasks
+from testagent.api import subscription
 settings = dict()
 
 handlers = [
@@ -26,4 +27,8 @@ handlers = [
     (r"/task/events/task-failed/(.*)", events.TaskFailed),
     (r"/task/events/task-revoked/(.*)", events.TaskRevoked),
     (r"/task/events/task-retried/(.*)", events.TaskRetried),
+]
+
+subscription_handlers = [
+    (r"/subscribe", subscription.SubscriptionService)
 ]
