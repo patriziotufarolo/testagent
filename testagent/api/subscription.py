@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 __author__ = 'Patrizio Tufarolo'
 __email__ = 'patrizio.tufarolo@studenti.unimi.it'
 '''
@@ -39,5 +41,22 @@ class BaseTaskHandler(BaseHandler):
 
 
 class SubscriptionService(BaseTaskHandler):
-    def post(self, config):
+    def post(self, **kwargs):
+        result = dict()
+        default_opts = subscriptionoptions.options.group_dict("communication")
+        for item in default_opts:
+            try:
+                result[item] = kwargs[item]
+            except KeyError:
+                result[item] = default_opts[item]
+
+        output_file = subscriptionoptions.subscription_conf
+
+        out = open(output_file, "w")
+        for item in result:
+            out.write(item + " = " + result[item])
+        out.close()
+
+        self.write(result)
         pass
+

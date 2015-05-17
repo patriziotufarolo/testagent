@@ -13,11 +13,13 @@ import sys
 import atexit
 import signal
 import logging
+import threading
 from ssl import CERT_REQUIRED
 
 from tornado.options import options
 from tornado.options import parse_command_line, parse_config_file
 from tornado.log import enable_pretty_logging
+from tornado import ioloop
 from celery.bin.base import Command
 
 from testagent import __version__
@@ -29,6 +31,8 @@ from testagent.options import CeleryConfiguration
 from testagent.utils import abs_path
 from testagent.options import DEFAULT_CONFIG_FILE
 from testagent.subscription_options import DEFAULT_SUBSCRIPTION_FILE
+import testagent.options as testagentoptions
+from testagent.selfassessment import SelfAssessment
 logger = logging.getLogger(__name__)
 
 class TestAgentCommand(Command):
@@ -42,8 +46,15 @@ class TestAgentCommand(Command):
             parse_config_file(options.conf, final=False)
             parse_command_line([prog_name] + argv)
         except IOError:
-            if options.conf != DEFAULT_CONFIG_FILE or options.subscription_conf != DEFAULT_SUBSCRIPTION_FILE:
+            if options.conf != DEFAULT_CONFIG_FILE:
                 raise
+        try:
+            parse_config_file('subscription.conf', final=False)
+            parse_command_line([prog_name] + argv)
+        except IOError:
+            if options.subscription_conf != DEFAULT_SUBSCRIPTION_FILE:
+                raise
+
 
         #
         # DEBUG MODE LOGGING
@@ -53,6 +64,31 @@ class TestAgentCommand(Command):
             options.logging = "debug"
             enable_pretty_logging()
 
+        testagentoptions.SelfAssessment = SelfAssessment(options.selfassessment_dir)
+        try:
+            io_loop = ioloop.IOLoop.instance()
+            self.subscription_start()
+
+            if (True
+                and options.broker_url
+                and options.results_exchange_name
+                and options.results_exchange_type
+                and options.results_queue_name
+                and options.results_routing_key
+                and options.tasks_exchange_name
+                and options.tasks_exchange_name
+                and options.tasks_exchange_type
+                and options.tasks_queue_name):
+                self.testagent_start()
+
+            io_loop.start()
+        except KeyboardInterrupt:
+            sys.exit()
+
+    def subscription_start(self):
+        #
+        # SERVICE START
+        #
         #
         # SUBSCRIPTION SERVICE SETTINGS
         #
@@ -68,21 +104,14 @@ class TestAgentCommand(Command):
                 subscription_settings["ssl"]["ca_certs"] = abs_path(options.subscription_client_ca)
                 subscription_settings["ssl"]["cert_reqs"] = CERT_REQUIRED
 
-        subscription_service = TestAgentSubscription(options=options, **subscription_settings)
-        atexit.register(subscription_service.stop)
+        self.subscription_service = TestAgentSubscription(options=options, **subscription_settings)
 
-        #
-        # SUBSCRIPTION SERVICE START
-        #
-        self.print_subscription_banner('ssl' in apis_settings)
-        try:
-            subscription_service.start()
-        except (KeyboardInterrupt, SystemExit):
-            sys.exit()
+        atexit.register(self.subscription_service.stop)
 
-        #
-        # APIs SERVICE SETTINGS
-        #
+        self.print_subscription_banner('ssl' in subscription_settings)
+        self.subscription_service.start()
+
+    def testagent_start(self):
 
         apis_settings['debug'] = options.debug
 
@@ -94,11 +123,29 @@ class TestAgentCommand(Command):
             if options.subscription_client_ca:
                 apis_settings["ssl"]["ca_certs"] = abs_path(options.apis_client_ca)
                 apis_settings["ssl"]["cert_reqs"] = CERT_REQUIRED
-
-
+        if options.broker_url[:4] != "amqp":
+            raise Exception("Only AMQP is supported")
         CeleryConfiguration.BROKER_URL = options.broker_url
         CeleryConfiguration.CELERY_TIMEZONE = options.timezone
         CeleryConfiguration.CELERY_RESULT_BACKEND = options.backend_broker_url
+        from kombu import Queue, Exchange
+        CeleryConfiguration.CELERY_DEFAULT_QUEUE = options.tasks_queue_name
+        CeleryConfiguration.CELERY_QUEUES = [
+            Queue(options.tasks_queue_name,
+                  exchange=Exchange(options.tasks_exchange_name, type=options.tasks_exchange_type),
+                  routing_key=options.tasks_routing_key
+                  )
+        ]
+
+        CeleryConfiguration.BROKER_USE_SSL = False
+        if options.broker_ssl_enable and options.broker_ssl_ca:
+            CeleryConfiguration.BROKER_USE_SSL = {
+                "ca_certs": options.broker_ssl_cacerts
+            }
+            if options.broker_ssl_verifycert and options.broker_ssl_keyfile and options.broker_ssl_certfile:
+                CeleryConfiguration.BROKER_USE_SSL["keyfile"] = options.broker_ssl_keyfile,
+                CeleryConfiguration.BROKER_USE_SSL["certfile"] = options.broker_ssl_certfile,
+                CeleryConfiguration.BROKER_USE_SSL["cert_reqs"] = CERT_REQUIRED,
 
         self.app.config_from_object(CeleryConfiguration)
 
@@ -108,6 +155,7 @@ class TestAgentCommand(Command):
 
         testagent = TestAgent(capp=self.app, options=options, **apis_settings)
         self.testagent = testagent
+        testagentoptions.testagent = testagent
         atexit.register(testagent.stop)
 
         def sigterm_handler(signal, frame):
@@ -118,10 +166,8 @@ class TestAgentCommand(Command):
 
         self.print_banner('ssl' in apis_settings)
 
-        try:
-            testagent.start()
-        except (KeyboardInterrupt, SystemExit):
-            sys.exit()
+        testagent.start()
+
 
     def handle_argv(self, prog_name, argv, command=None):
         return self.run_from_argv(prog_name, argv)

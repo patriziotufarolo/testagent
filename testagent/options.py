@@ -11,8 +11,9 @@ import types
 from tornado.options import define
 from tornado.options import options
 from testagent.selfassessment import SelfAssessment
-DEFAULT_CONFIG_FILE = '/etc/testagent/testagent.conf'
-DEFAULT_SELFASSESSMENT_DIR = '/etc/testagent/selfassessment'
+DEFAULT_CONFIG_FILE = 'etc/testagent/testagent.conf'
+
+DEFAULT_SELFASSESSMENT_DIR = 'etc/testagent/selfassessment'
 subscription_settings = dict()
 apis_settings = dict()
 
@@ -22,6 +23,7 @@ class CeleryConfiguration(object):
     CELERY_EVENT_SERIALIZER = 'json'
     CELERY_RESULT_SERIALIZER = 'json'
     CELERY_IMPORTS = ('testagent.tasks',)
+    CELERYD_POOL_RESTARTS = True
 
 
 
@@ -45,6 +47,8 @@ define("subscription_server_key", type=str, default=None,
        help="SSL key file for the subscription service", group="subscription service")
 define("subscription_client_ca", type=str, default=None,
        help="SSL Certification Authority for TLS client authentication", group="subscription service")
+
+
 
 '''
 apis service settings
@@ -87,33 +91,10 @@ define("timezone", default="Europe/Rome", help="Timezone (default: Europe/Rome)"
 
 
 
-'''
-define("broker_url", default="amqp://guest:guest@localhost/",
-       help="Broker URL - For now please use only AMQP if you are reporting to a TestManager" +
-            " otherwise the software will crash. " +
-            "(I don't know) (default: amqp://guest:guest@localhost/)", type=str)
-define("backend_broker_url", default="", help="Backend broker URL", type=str)
-
-
-define("results_exchange_name", default="collector_agents",
-       help="Exchange name for reporting results (default: collector_agents)", type=str, group="subscription")
-define("results_exchange_type", default="direct",
-       help="Exchange type for reporting results (default: direct)", type=str, group="subscription")
-define("results_queue_name", default="queue", group="subscription")
-define("results_routing_key", default="key-test",
-       help="Routing key for reporting results (default: key-test)", type=str, group="subscription")
-'''
-
-selfassessment = SelfAssessment("/etc/testagent")
+selfassessment = None
 
 
 define("debug", default=False,
        help="Run in debug mode", type=bool, group="main")
-
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_EVENT_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_IMPORTS = ('testagent.tasks',)
 
 default_options = options

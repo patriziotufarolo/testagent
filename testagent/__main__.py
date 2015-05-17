@@ -10,7 +10,6 @@ Date: 20/04/15
 '''
 
 from testagent.command import TestAgentCommand
-
 def main():
     try:
         test_agent = TestAgentCommand()

@@ -17,10 +17,10 @@ from celery import Celery
 from celery.apps import worker
 
 import tornado.web
-
+import threading
 from tornado import ioloop
 
-
+from celery.signals import worker_shutdown
 from testagent.urls import handlers
 from testagent.events import Events
 from testagent.options import default_options
@@ -78,7 +78,7 @@ RED+'''     c0WMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
 ]
 
 worker.BANNER = '\n'.join(ARTLINES) + "\n" + worker.BANNER + "\n"
-import threading
+
 
 class TestAgent(tornado.web.Application):
     pool_executor_cls = ThreadPoolExecutor
@@ -89,13 +89,13 @@ class TestAgent(tornado.web.Application):
         super(TestAgent, self).__init__(**kwargs)
 
         self.options = options or default_options
-        self.ssl_options = kwargs.get('ssl_options', None)
-        self.io_loop = io_loop or ioloop.IOLoop.instance()
-        self.capp = capp or Celery('testagent')
-        self.capp.config_from_object(testagent.options)
+        self.ssl_options = kwargs.get('ssl', None)
+        #self.io_loop = io_loop or ioloop.IOLoop.instance()
+        self.capp = capp
 
-        self.worker_thread = threading.Thread(target=self.run_worker, args=(self.capp,))
+        self.worker_thread = threading.Thread(target=self.run_worker, args=(self.capp, ))
         self.worker_thread.daemon = True
+
         self.events = events or Events(self.capp,
                                        db=self.options.db,
                                        persistent=self.options.persistent,
@@ -110,11 +110,11 @@ class TestAgent(tornado.web.Application):
     def start(self):
         self.pool = self.pool_executor_cls(max_workers=self.max_workers)
         self.events.start()
-        self.listen(self.options.port, address=self.options.address,
+        self.listen(self.options.apis_port, address=self.options.apis_address,
                     ssl_options=self.ssl_options, xheaders=True)
         self.worker_thread.start()
-        self.io_loop.start()
         self.started = True
+        #self.io_loop.start()
 
     def stop(self):
         if self.started:

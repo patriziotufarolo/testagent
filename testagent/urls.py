@@ -30,5 +30,5 @@ handlers = [
 ]
 
 subscription_handlers = [
-    (r"/subscribe", subscription.SubscriptionService)
+    (r"/", subscription.SubscriptionService)
 ]

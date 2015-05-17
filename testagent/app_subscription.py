@@ -40,27 +40,27 @@ class TestAgentSubscription(tornado.web.Application):
 
         self.options = options or default_options
         self.ssl = kwargs.get('ssl', None)
-        self.io_loop = io_loop or ioloop.IOLoop.instance()
+        #self.io_loop = io_loop or ioloop.IOLoop.instance()
         self.started = False
 
     def start(self):
         self.pool = self.pool_executor_cls(max_workers=self.max_workers)
+        self.listen(self.options.subscription_port, address=self.options.subscription_address,
+                    ssl_options=self.ssl, xheaders=True)
+        self.started = True
+        #self.io_loop.start()
 
-        if not (True
-                and self.options.broker_url
-                and self.options.backend_broker_url
-                and self.options.results_exchange_name
-                and self.options.results_exchange_type
-                and self.options.results_queue_name
-                and self.options.results_routing_key):
+    def listen(self, port, address="", **kwargs):
+        from tornado.httpserver import HTTPServer
+        self.httpserver = HTTPServer(self, **kwargs)
+        self.httpserver.listen(port, address)
 
-            self.listen(self.options.subscription_port, address=self.options.subscription_address,
-                        ssl_options=self.ssl, xheaders=True)
-            self.io_loop.start()
-            self.started = True
+
 
     def stop(self):
         if self.started:
+            self.httpserver.close_all_connections()
+            self.httpserver.stop()
             self.pool.shutdown(wait=False)
             self.started = False
 
