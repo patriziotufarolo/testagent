@@ -10,6 +10,7 @@ Date: 11/05/15
 from testagent.api.ViewBaseHandler import BaseHandler
 from tornado.web import HTTPError
 from tornado.escape import json_decode
+import testagent.subscription_options as subscriptionoptions
 import json
 
 class BaseTaskHandler(BaseHandler):
@@ -42,7 +43,7 @@ class BaseTaskHandler(BaseHandler):
 
 class SubscriptionService(BaseTaskHandler):
     def post(self, **kwargs):
-        result = dict()
+        '''result = dict()
         default_opts = subscriptionoptions.options.group_dict("communication")
         for item in default_opts:
             try:
@@ -52,11 +53,15 @@ class SubscriptionService(BaseTaskHandler):
 
         output_file = subscriptionoptions.subscription_conf
 
-        out = open(output_file, "w")
-        for item in result:
-            out.write(item + " = " + result[item])
-        out.close()
-
+        #out = open(output_file, "w")
+        #for item in result:
+        #    out.write(item + " = " + result[item])
+        #out.close()'''
+        from testagent.app import process
+        try:
+            process.terminate()
+        except:
+            pass
+        result = {"ciao":"ciao"}
         self.write(result)
-        pass
 

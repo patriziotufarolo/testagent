@@ -18,6 +18,7 @@ from celery.apps import worker
 
 import tornado.web
 import threading
+from multiprocessing import Process
 from tornado import ioloop
 
 from celery.signals import worker_shutdown
@@ -26,7 +27,7 @@ from testagent.events import Events
 from testagent.options import default_options
 import testagent.options
 
-
+process = Process()
 
 RED = "\033[1;31m"
 GRAY = "\033[1;30m"
@@ -81,6 +82,10 @@ worker.BANNER = '\n'.join(ARTLINES) + "\n" + worker.BANNER + "\n"
 
 
 class TestAgent(tornado.web.Application):
+    """
+    18/05
+    @todo: global testagent app
+    """
     pool_executor_cls = ThreadPoolExecutor
     max_workers = 4
 
@@ -90,11 +95,11 @@ class TestAgent(tornado.web.Application):
 
         self.options = options or default_options
         self.ssl_options = kwargs.get('ssl', None)
-        #self.io_loop = io_loop or ioloop.IOLoop.instance()
+        # self.io_loop = io_loop or ioloop.IOLoop.instance()
         self.capp = capp
 
-        self.worker_thread = threading.Thread(target=self.run_worker, args=(self.capp, ))
-        self.worker_thread.daemon = True
+        # self.worker_thread = threading.Thread(target=self.run_worker)
+        self.worker_process = Process(target=self.run_worker)
 
         self.events = events or Events(self.capp,
                                        db=self.options.db,
@@ -103,16 +108,21 @@ class TestAgent(tornado.web.Application):
                                        max_tasks_in_memory=self.options.max_tasks)
         self.started = False
 
-    @staticmethod
-    def run_worker(capp):
-        capp.worker_main([__name__])
+
+    def run_worker(self):
+        from celery.bin import worker
+        wrk = worker.worker(app=self.capp)
+        wrk.run()
 
     def start(self):
         self.pool = self.pool_executor_cls(max_workers=self.max_workers)
         self.events.start()
         self.listen(self.options.apis_port, address=self.options.apis_address,
                     ssl_options=self.ssl_options, xheaders=True)
-        self.worker_thread.start()
+        # self.worker_thread.start()
+        self.worker_process.start()
+        global process
+        process = self.worker_process
         self.started = True
         #self.io_loop.start()
 
