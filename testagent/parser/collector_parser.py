@@ -16,38 +16,39 @@ from testagent.parser.testcase_parser import TestCaseParser
 from testagent.parser.exceptions import CollectorParsingException
 from testagent.structure import Collector
 
+
 class CollectorParser(Parser):
-	def parse(self):
-		try:
-			root = etree.fromstring(self.get_input().encode('utf-8'), parser=etree.XMLParser(encoding='utf-8'))
-		except etree.XMLSyntaxError as e:
-			raise CollectorParsingException(e)
+    def parse(self):
+        try:
+            root = etree.fromstring(self.get_input().encode('utf-8'), parser=etree.XMLParser(encoding='utf-8'))
+        except etree.XMLSyntaxError as e:
+            raise CollectorParsingException(e)
 
-		if root.tag.lower() == "collector":
-			if (not root.get("id")) or root.get("id") == "":
-				raise CollectorParsingException("id parameter has not been defined for the collector")
-			else:
-				collector_id = root.get("id")
+        if root.tag.lower() == "collector":
+            if (not root.get("id")) or root.get("id") == "":
+                raise CollectorParsingException("id parameter has not been defined for the collector")
+            else:
+                collector_id = root.get("id")
 
-			if not root.get("cmid") or root.get("cmid") == "":
-				raise CollectorParsingException("cmid parameter has not been defined for the collector")
-			else:
-				cm_id = root.get("cmid")
+            if not root.get("cmid") or root.get("cmid") == "":
+                raise CollectorParsingException("cmid parameter has not been defined for the collector")
+            else:
+                cm_id = root.get("cmid")
 
-			if not root.get("probe_driver") or root.get("probe_driver") == "":
-				raise CollectorParsingException("probe_driver parameter has not been defined for the collector")
-			else:
-				tot = root.get("probe_driver")
+            if not root.get("probe_driver") or root.get("probe_driver") == "":
+                raise CollectorParsingException("probe_driver parameter has not been defined for the collector")
+            else:
+                tot = root.get("probe_driver")
 
-			
-			inside = (root.text if root.text is not None else '') + ''.join(etree.tostring(child, pretty_print=False,method='c14n') for child in root)
-			collector_obj = Collector(collector_id,cm_id,tot)
-			tcp = TestCaseParser()
-			tcp.set_input(inside)
-			tcp.set_probe(tot)	
-			testcases = tcp.parse()
-			for testcase_obj in testcases:
-				collector_obj.appendTestCase(testcase_obj)
-		else:
-			raise CollectorParsingException("Root element is not a Collector tag")
-		return collector_obj
+            inside = (root.text if root.text is not None else '') + ''.join(
+                etree.tostring(child, pretty_print=False, method='c14n') for child in root)
+            collector_obj = Collector(collector_id, cm_id, tot)
+            tcp = TestCaseParser()
+            tcp.set_input(inside)
+            tcp.set_probe(tot)
+            testcases = tcp.parse()
+            for testcase_obj in testcases:
+                collector_obj.appendTestCase(testcase_obj)
+        else:
+            raise CollectorParsingException("Root element is not a Collector tag")
+        return collector_obj

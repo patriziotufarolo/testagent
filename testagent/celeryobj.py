@@ -18,4 +18,4 @@ LGRAY = "\033[0;37m"
 RESET_SEQ = "\033[1;36m"
 
 app = Celery('cumulus_testagent')
-app.config_from_object(testagent.options)
+app.config_from_object(testagent.options.CeleryConfiguration)

@@ -10,16 +10,22 @@
 
 from lxml import etree
 
+
 class Parser(object):
-	def __init__(self):
-		self.__input = ""
-	def set_input(self,parser_input):
-		self.__input = parser_input
-	def get_input(self):
-		return self.__input
-	def set_probe(self,parser_input):
-		self.__probe = parser_input
-	def get_probe(self):
-		return self.__probe
-	def parse():
-		pass
+    def __init__(self):
+        self.__input = ""
+
+    def set_input(self, parser_input):
+        self.__input = parser_input
+
+    def get_input(self):
+        return self.__input
+
+    def set_probe(self, parser_input):
+        self.__probe = parser_input
+
+    def get_probe(self):
+        return self.__probe
+
+    def parse():
+        pass

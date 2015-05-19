@@ -59,7 +59,7 @@ class SubscriptionService(BaseTaskHandler):
         #out.close()'''
         from testagent.app import process
         try:
-            process.terminate()
+            process.restartWorker()
         except:
             pass
         result = {"ciao":"ciao"}

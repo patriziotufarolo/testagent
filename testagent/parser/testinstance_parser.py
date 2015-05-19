@@ -16,6 +16,7 @@ from testagent.parser.exceptions import TestInstanceParsingException
 from testagent.structure import TestInstance
 import testagent.options as settings
 
+
 class TestInstanceParser(Parser):
     def parse(self):
         try:
@@ -23,15 +24,14 @@ class TestInstanceParser(Parser):
         except etree.XMLSyntaxError as e:
             raise TestInstanceParsingException(e)
 
-
         if root.tag.lower() == "testinstances":
             result = []
             for ti in root:
-                #I am only handling Inputs for now
+                # I am only handling Inputs for now
                 if ti.tag.lower() == "testinstance":
                     ti_id = ti.get("Operation")
                     ti_obj = TestInstance(ti_id)
-                
+
                     for elements in ti:
                         if elements.tag == "Input":
                             for inputitem in elements:
@@ -42,13 +42,15 @@ class TestInstanceParser(Parser):
                                     pass
                                 try:
                                     if not input_value or input_value == "":
-                                        input_value = settings.selfassessment.get_self_assessment(self.get_probe())[ti_id][input_key]
+                                        input_value = \
+                                        settings.selfassessment.get_self_assessment(self.get_probe())[ti_id][input_key]
                                         pass
                                 except:
-                                    raise TestInstanceParsingException("No value provided for key " + input_key + ". Check the xml input or the self assessment configuration file.")
+                                    raise TestInstanceParsingException(
+                                        "No value provided for key " + input_key + ". Check the xml input or the self assessment configuration file.")
 
                                 try:
-                                    ti_obj.appendInput(input_key,input_value)
+                                    ti_obj.appendInput(input_key, input_value)
                                 except:
                                     raise TestInstanceParsingException("Malformed input item")
                     result.append(ti_obj)
@@ -57,4 +59,3 @@ class TestInstanceParser(Parser):
             return result
         else:
             raise TestInstanceParsingException("Element is not TestInstances")
-        

@@ -10,4 +10,4 @@
 
 
 class TestInstanceParsingException(Exception):
-	pass
+    pass

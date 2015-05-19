@@ -27,7 +27,7 @@ from testagent.events import Events
 from testagent.options import default_options
 import testagent.options
 
-process = Process()
+process = None
 
 RED = "\033[1;31m"
 GRAY = "\033[1;30m"
@@ -99,7 +99,7 @@ class TestAgent(tornado.web.Application):
         self.capp = capp
 
         # self.worker_thread = threading.Thread(target=self.run_worker)
-        self.worker_process = Process(target=self.run_worker)
+
 
         self.events = events or Events(self.capp,
                                        db=self.options.db,
@@ -110,26 +110,33 @@ class TestAgent(tornado.web.Application):
 
 
     def run_worker(self):
-        from celery.bin import worker
-        wrk = worker.worker(app=self.capp)
+        import celery.bin.worker
+        wrk = celery.bin.worker.worker(app=self.capp)
         wrk.run()
 
     def start(self):
         self.pool = self.pool_executor_cls(max_workers=self.max_workers)
-        self.events.start()
+        # self.events.start()
         self.listen(self.options.apis_port, address=self.options.apis_address,
                     ssl_options=self.ssl_options, xheaders=True)
         # self.worker_thread.start()
+        self.worker_process = Process(target=self.run_worker)
         self.worker_process.start()
         global process
-        process = self.worker_process
+        process = self
         self.started = True
         #self.io_loop.start()
+
+    def restartWorker(self):
+        self.worker_process.terminate()
+        self.worker_process = Process(target=self.run_worker)
+        self.worker_process.start()
 
     def stop(self):
         if self.started:
             self.events.stop()
             self.pool.shutdown(wait=False)
+            self.worker_process.terminate()
             self.started = False
 
     def delay(self, method, *args, **kwargs):

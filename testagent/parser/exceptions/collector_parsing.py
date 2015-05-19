@@ -10,4 +10,4 @@
 
 
 class CollectorParsingException(Exception):
-	pass
+    pass
