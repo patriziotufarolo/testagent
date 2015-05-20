@@ -11,6 +11,8 @@ from testagent.api.ViewBaseHandler import BaseHandler
 from tornado.web import HTTPError
 from tornado.escape import json_decode
 import testagent.subscription_options as subscriptionoptions
+import testagent.options as testagentoptions
+
 import json
 
 class BaseTaskHandler(BaseHandler):
@@ -43,25 +45,29 @@ class BaseTaskHandler(BaseHandler):
 
 class SubscriptionService(BaseTaskHandler):
     def post(self, **kwargs):
-        '''result = dict()
-        default_opts = subscriptionoptions.options.group_dict("communication")
+        result = dict()
+        default_opts = testagentoptions.options.group_dict("communication")
         for item in default_opts:
             try:
                 result[item] = kwargs[item]
             except KeyError:
                 result[item] = default_opts[item]
+            if result[item] is None:
+                result[item] = ""
+            else:
+                result[item] = str(result[item])
 
-        output_file = subscriptionoptions.subscription_conf
+        output_file = testagentoptions.options.subscription_conf
 
-        #out = open(output_file, "w")
-        #for item in result:
-        #    out.write(item + " = " + result[item])
-        #out.close()'''
+        out = open(output_file + "2", "w")
+        for item in result:
+            out.write(item + " = \"" + result[item] + "\"\n")
+        out.close()
         from testagent.app import process
         try:
             process.restartWorker()
         except:
             pass
-        result = {"ciao":"ciao"}
+
         self.write(result)
 

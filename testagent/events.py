@@ -25,7 +25,7 @@ from tornado.ioloop import IOLoop
 from celery.events import EventReceiver
 from celery.events.state import State
 
-from . import api
+import testagent.services.rest as api
 
 try:
     from collections import Counter
@@ -46,7 +46,6 @@ class EventsState(State):
     def event(self, event):
         worker_name = event['hostname']
         event_type = event['type']
-
         self.counter[worker_name][event_type] += 1
 
         # Send event to api subscribers (via websockets)

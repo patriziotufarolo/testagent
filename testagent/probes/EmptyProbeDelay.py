@@ -8,7 +8,7 @@ from time import sleep
 class EmptyProbe(Probe):
     def ciao0(self, inputs):
         print "ciao0"
-        sleep(10)
+        sleep(5)
         return True
 
     def ciao0r (self, inputs):

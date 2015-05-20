@@ -55,7 +55,7 @@ apis service settings
 '''
 define("apis_port", default=8080,
        help="APIs listening port", type=int, group="apis service")
-define("apis_address", default='',
+define("apis_address", default='0.0.0.0',
        help="APIs listening address", type=str, group="apis service")
 define("apis_server_cert", type=str, default=None,
        help="SSL certificate file", group="apis service")
@@ -75,13 +75,13 @@ events management
 '''
 define("enable_events", type=bool, default=True,
        help="Periodically enable Celery events" , group="main")
-define("persistent", type=bool, default=False,
+define("persistent", type=bool, default=True,
        help="Enable persistent mode", group="events")
 define("inspect_timeout", default=1000, type=float,
        help="Inspect timeout (in milliseconds)", group="events")
 define("max_tasks", type=int, default=10000,
        help="Maximum number of tasks to keep in memory", group="main")
-define("db", type=str, default='testagent',
+define("db", type=str, default='testagent.db',
        help="Database file", group="events")
 
 '''

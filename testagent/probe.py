@@ -12,13 +12,14 @@ import traceback
 from celery.contrib import rdb
 from celery.app.amqp import TaskProducer, AMQP
 from kombu import Connection, Consumer, Exchange, Producer, Queue
-
+from testagent.services.WorkerService import WorkerService
 
 class Probe(object):
     def __init__(self):
         self.testinstances = {}
         self.atomicOperations = []
         self.logger = None
+        self.cc = WorkerService().CeleryConfiguration
 
     def appendAtomic(self, action, rollback):
         self.atomicOperations.append({"action": action, "rollback": rollback})
