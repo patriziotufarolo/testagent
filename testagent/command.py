@@ -10,54 +10,53 @@ Date: 20/04/15
 '''
 
 import sys
-import atexit
-import logging
+
+import tornado.log
+
 from tornado.options import options
 from tornado.options import parse_command_line, parse_config_file
 from tornado.log import enable_pretty_logging
 from tornado import ioloop
 from celery.bin.base import Command
-
 from testagent import __version__
 from testagent.options import DEFAULT_CONFIG_FILE
 from testagent.subscription_options import DEFAULT_SUBSCRIPTION_FILE
 from testagent.services.SubscriptionService import TestAgentSubscription
 from testagent.services.ApiService import TestAgentAPI
 from testagent.services.WorkerService import WorkerService
-
-import testagent.options as testagentoptions
+from testagent.services.LoggingService import LoggingService
 from testagent.selfassessment import SelfAssessment
-logger = logging.getLogger(__name__)
+
 
 class TestAgentCommand(Command):
 
     def run_from_argv(self, prog_name, argv=None, command=None):
         argv = list(filter(self.testagent_option, argv))
-        parse_command_line([prog_name] + argv)
+
         try:
             parse_config_file(options.conf, final=False)
-            parse_command_line([prog_name] + argv)
         except IOError:
             if options.conf != DEFAULT_CONFIG_FILE:
                 raise
         try:
             parse_config_file(options.subscription_conf, final=False)
-            parse_command_line([prog_name] + argv)
         except IOError:
             if options.subscription_conf != DEFAULT_SUBSCRIPTION_FILE:
                 raise
 
+        parse_command_line([prog_name] + argv)
 
         #
         # DEBUG MODE LOGGING
         #
-
         if options.debug and options.logging == 'info':
             options.logging = "debug"
             enable_pretty_logging()
 
         try:
+            SelfAssessment().configure(options.selfassessment_dir)
             TestAgentSubscription().configure(options)
+            LoggingService().configure(options)
             TestAgentAPI().configure(options, self.app)
             TestAgentSubscription().start()
             TestAgentAPI().start()

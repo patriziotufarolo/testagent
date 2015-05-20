@@ -7,14 +7,14 @@
 # Licensed under the MIT license:
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2015, Patrizio Tufarolo <patrizio.tufarolo@studenti.unimi.it>
-import os
+
 from lxml import etree
 
 from testagent.parser import Parser
 
 from testagent.parser.exceptions import TestInstanceParsingException
 from testagent.structure import TestInstance
-import testagent.options as settings
+from testagent.selfassessment import SelfAssessment
 
 
 class TestInstanceParser(Parser):
@@ -43,7 +43,7 @@ class TestInstanceParser(Parser):
                                 try:
                                     if not input_value or input_value == "":
                                         input_value = \
-                                        settings.selfassessment.get_self_assessment(self.get_probe())[ti_id][input_key]
+                                            SelfAssessment().get_self_assessment(self.get_probe())[ti_id][input_key]
                                         pass
                                 except:
                                     raise TestInstanceParsingException(

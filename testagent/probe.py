@@ -8,10 +8,7 @@ Author: Patrizio Tufarolo <patrizio.tufarolo@studenti.unimi.it>
 Date: 21/04/15
 '''
 
-import traceback
-from celery.contrib import rdb
-from celery.app.amqp import TaskProducer, AMQP
-from kombu import Connection, Consumer, Exchange, Producer, Queue
+import traceback, logging
 from testagent.services.WorkerService import WorkerService
 
 class Probe(object):
@@ -89,11 +86,6 @@ class Probe(object):
                 logger.error("Exception in rollback")
                 logger.error(traceback.format_exc())
             finalResult = False
-        result_to_send = str(celeryobj.request.id) + "#" + str(finalResult)
-        print result_to_send
-        exchange = Exchange("collector_agents", type="direct")
-        queue = Queue('collector_agents', exchange, 'key-test')
-        with celeryobj.app.producer_or_acquire(None) as prod:
-            prod.publish(result_to_send, serializer='raw', routing_key='key-test', declare=[queue], exchange=exchange,
-                         retry=True)
+        # result_to_send = str(celeryobj.request.id) + "#" + str(finalResult)
+        # print result_to_send
         return finalResult

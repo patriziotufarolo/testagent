@@ -10,6 +10,7 @@ Date: 20/05/15
 
 import logging
 import tornado.web
+import atexit
 
 from functools import partial
 from concurrent.futures import ThreadPoolExecutor
@@ -49,10 +50,12 @@ class TestAgentSubscription(tornado.web.Application, Singleton):
         tornado.web.Application.__init__(self, debug=options.debug, handlers=handlers, ssl_options=self.ssl)
         self.started = False
         self.options = options
+        atexit.register(self.stop)
         self.http_server = HTTPServer(self, ssl_options=self.ssl)
 
     @Singleton._if_configured(SubscriptionServiceException)
     def start(self):
+
         self.pool = self.pool_executor_cls(max_workers=self.max_workers)
         self.listen(
             self.options.subscription_port,

@@ -9,6 +9,7 @@ Date: 20/05/15
 '''
 
 import logging
+import atexit
 import tornado.web
 
 from functools import partial
@@ -56,6 +57,7 @@ class TestAgentAPI(tornado.web.Application, Singleton):
                                         enable_events=self.options.enable_events,
                                         max_tasks_in_memory=self.options.max_tasks)
         self.started = False
+        atexit.register(self.stop)
         self.http_server = HTTPServer(self, ssl_options=self.ssl)
 
     @Singleton._if_configured(ApiServiceException)
@@ -76,7 +78,6 @@ class TestAgentAPI(tornado.web.Application, Singleton):
         if self.started:
             self.events.stop()
             self.pool.shutdown(wait=False)
-            self.worker_process.terminate()
             self.started = False
 
     @Singleton._if_configured(ApiServiceException)

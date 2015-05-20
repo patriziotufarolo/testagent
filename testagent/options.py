@@ -7,24 +7,12 @@ Project: testagent
 Author: Patrizio Tufarolo <patrizio.tufarolo@studenti.unimi.it>
 Date: 20/04/15
 '''
-import types
 from tornado.options import define
 from tornado.options import options
-from testagent.selfassessment import SelfAssessment
-DEFAULT_CONFIG_FILE = 'etc/testagent/testagent.conf'
-
-DEFAULT_SELFASSESSMENT_DIR = 'etc/testagent/selfassessment'
-subscription_settings = dict()
-apis_settings = dict()
-
-class CeleryConfiguration(object):
-    CELERY_ACCEPT_CONTENT = ['json']
-    CELERY_TASK_SERIALIZER = 'json'
-    CELERY_EVENT_SERIALIZER = 'json'
-    CELERY_RESULT_SERIALIZER = 'json'
-    CELERY_IMPORTS = ('testagent.tasks',)
-    CELERYD_POOL_RESTARTS = True
-
+DEFAULT_CONFIG_FILE = '/etc/testagent/testagent.conf'
+DEFAULT_SELFASSESSMENT_DIR = '/etc/testagent/selfassessment'
+DEFAULT_EVIDENCES_DIR = 'var/log/testagent/evidences'
+DEFAULT_MAIN_LOGFILE = 'var/log/testagent/testagent.log'
 
 
 '''
@@ -90,11 +78,14 @@ configuration for celery
 define("timezone", default="Europe/Rome", help="Timezone (default: Europe/Rome)", type=str, group="main")
 
 
-
-selfassessment = None
-
-
 define("debug", default=False,
        help="Run in debug mode", type=bool, group="main")
-
+define("evidences_directory", default=DEFAULT_EVIDENCES_DIR,
+       help="Log directory for evidences", type=str, group="main")
+define("evidences_syslog_server",
+       help="Syslog server address", type=str, group="main")
+define("evidences_syslog_port", default=514,
+       help="Syslog server address", type=int, group="main")
+define("evidences_log_level", default="info",
+       help="Evidences log level", type=str, group="main")
 default_options = options

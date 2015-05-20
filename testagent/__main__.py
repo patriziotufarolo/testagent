@@ -5,6 +5,8 @@ from __future__ import print_function
 from testagent.services.SubscriptionService import TestAgentSubscription
 from testagent.services.ApiService import TestAgentAPI
 from testagent.services.WorkerService import WorkerService
+from testagent.services.LoggingService import LoggingService
+from testagent.selfassessment import SelfAssessment
 
 __author__ = 'Patrizio Tufarolo'
 __email__ = 'patrizio.tufarolo@studenti.unimi.it'
@@ -19,6 +21,8 @@ def main():
     TestAgentSubscription()
     TestAgentAPI()
     WorkerService()
+    SelfAssessment()
+    LoggingService()
     try:
         test_agent = TestAgentCommand()
         test_agent.execute_from_commandline()

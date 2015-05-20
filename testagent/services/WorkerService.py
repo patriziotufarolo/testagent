@@ -7,13 +7,35 @@ import celery.bin.worker
 
 from multiprocessing import Process
 from celery import Celery
-from celery.signals import task_postrun
+from celery.signals import task_success, task_failure, task_revoked
 from kombu import Queue, Exchange
 from ssl import CERT_REQUIRED
 
 from testagent.utils.Singleton import Singleton
 from testagent.exceptions.WorkerServiceException import WorkerServiceException
 from testagent.options import default_options
+
+@task_success.connect
+def task_success_handler(sender=None, result=None, args=None, kwargs=None, **kwds):
+    ws = WorkerService()
+    result_to_send = sender.request.id + "#" + str(result[0])
+    print("Sending back: " + result_to_send)
+    #queue = Queue('collector_agents',
+    #              Exchange("collector_agents", type="direct"),
+    #              'key-test')
+    exchange = Exchange(ws.CeleryConfiguration.RESULT_EXCHANGE_NAME, type=ws.CeleryConfiguration.RESULT_EXCHANGE_TYPE)
+    queue = Queue(ws.CeleryConfiguration.RESULT_QUEUE_NAME,
+        exchange=exchange,
+        routing_key=ws.CeleryConfiguration.RESULT_ROUTING_KEY
+    )
+
+    with ws.app.producer_or_acquire(None) as prod:
+        prod.publish(result_to_send, serializer='raw',
+                     routing_key=ws.CeleryConfiguration.RESULT_ROUTING_KEY,
+                     declare=[queue], exchange=exchange,
+                     retry=True)
+    print("Sent back: " + result_to_send)
+
 
 class WorkerService(Singleton):
     status = None
@@ -29,6 +51,7 @@ class WorkerService(Singleton):
         CELERY_RESULT_SERIALIZER = 'json'
         CELERY_IMPORTS = ('testagent.tasks',)
         CELERYD_POOL_RESTARTS = True
+        CELERYD_HIJACK_ROOT_LOGGER = False
 
     def __custom_banner(self):
         RED = "\033[1;49;31m"
@@ -36,6 +59,7 @@ class WorkerService(Singleton):
         RESET_SEQ = "\033[1;49;37m"
         from celery.apps import worker as celery_worker
         celery_worker.ARTLINES = []
+
         celery_worker.BANNER = """\n
         \t\t\tCelery Version {version}
 
@@ -129,12 +153,6 @@ class WorkerService(Singleton):
             self.app.connection = self.app.broker_connection
             self.app.loader.import_default_modules()
             self.options = options
-
-    @staticmethod
-    @task_postrun.connect
-    def task_postrun_handler(sender=None, signal=None, task_id=None, task=None, args=None, kwargs=None, retval=None, state=None):
-        pass
-
 
     @Singleton._if_configured(WorkerServiceException)
     def get_app(self):
