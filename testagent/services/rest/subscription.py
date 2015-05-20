@@ -10,9 +10,7 @@ Date: 11/05/15
 from testagent.api.ViewBaseHandler import BaseHandler
 from tornado.web import HTTPError
 from tornado.escape import json_decode
-import testagent.subscription_options as subscriptionoptions
-import testagent.options as testagentoptions
-
+from testagent.services.WorkerService import WorkerService
 import json
 
 class BaseTaskHandler(BaseHandler):
@@ -46,7 +44,8 @@ class BaseTaskHandler(BaseHandler):
 class SubscriptionService(BaseTaskHandler):
     def post(self, **kwargs):
         result = dict()
-        default_opts = testagentoptions.options.group_dict("communication")
+        options = WorkerService().get_options()
+        default_opts = options.group_dict("communication")
         for item in default_opts:
             try:
                 result[item] = kwargs[item]
@@ -57,17 +56,22 @@ class SubscriptionService(BaseTaskHandler):
             else:
                 result[item] = str(result[item])
 
-        output_file = testagentoptions.options.subscription_conf
+        output_file = options.subscription_conf
 
-        out = open(output_file + "2", "w")
+        out = open(output_file, "w")
         for item in result:
-            out.write(item + " = \"" + result[item] + "\"\n")
+            if result[item].isdigit() or result[item] == "True" or result[item] == "False":
+                out.write(item + " = " + result[item] + "\n")
+            else:
+                out.write(item + " = \"" + result[item] + "\"\n")
         out.close()
-        from testagent.app import process
-        try:
-            process.restartWorker()
-        except:
-            pass
+        WorkerService().stop_worker()
+        app = WorkerService().get_app()
+        WorkerService().deconfigure()
+        from tornado.options import parse_config_file
+        parse_config_file(output_file)
+        WorkerService().configure(app, options)
+        WorkerService().start_worker()
 
         self.write(result)
 

@@ -155,6 +155,10 @@ class WorkerService(Singleton):
             self.options = options
 
     @Singleton._if_configured(WorkerServiceException)
+    def deconfigure(self):
+        self._configured = False
+
+    @Singleton._if_configured(WorkerServiceException)
     def get_app(self):
         return self.app
 
@@ -162,6 +166,10 @@ class WorkerService(Singleton):
     def _worker_thread(self):
         wrk = celery.bin.worker.worker(app=self.app)
         wrk.run()
+
+    @Singleton._if_configured(WorkerServiceException)
+    def get_options(self):
+        return self.options
 
     @Singleton._if_configured(WorkerServiceException)
     def start_worker(self):
@@ -176,10 +184,3 @@ class WorkerService(Singleton):
             self.worker_process.terminate()
         if self.status == "started":
             self.status = "stopped"
-
-    @Singleton._if_configured(WorkerServiceException)
-    def restart_worker(self):
-        if self.worker_process.is_alive():
-            self.worker_process.terminate()
-        self.worker_process = Process(target=self.run_worker)
-        self.worker_process.start()
