@@ -43,7 +43,7 @@ class TestInstanceParser(Parser):
                                 try:
                                     if not input_value or input_value == "":
                                         input_value = \
-                                            SelfAssessment().get_self_assessment(self.get_probe())[ti_id][input_key]
+                                            SelfAssessment().get_self_assessment(self.get_probe(), self.get_cm_id())[ti_id][input_key]
                                         pass
                                 except:
                                     raise TestInstanceParsingException(

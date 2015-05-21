@@ -27,5 +27,11 @@ class Parser(object):
     def get_probe(self):
         return self.__probe
 
-    def parse():
+    def set_cm_id(self, parser_input):
+        self.__cm_id = parser_input
+
+    def get_cm_id(self):
+        return self.__cm_id
+
+    def parse(self):
         pass

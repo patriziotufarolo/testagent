@@ -61,8 +61,12 @@ class TestAgentCommand(Command):
             TestAgentAPI().start()
             WorkerService().configure(self.app, options)
             WorkerService().start_worker()
-            #from multiprocessing import Process
-            #Process(target=self.test_empty_probe).start()
+            from multiprocessing import Process
+            Process(target=self.test_empty_probe).start()
+            Process(target=self.test_empty_probe).start()
+            Process(target=self.test_empty_probe).start()
+            Process(target=self.test_empty_probe).start()
+
             io_loop = ioloop.IOLoop.instance()
             io_loop.start()
         except KeyboardInterrupt:

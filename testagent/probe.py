@@ -47,6 +47,7 @@ class Probe(object):
         })
         try:
             total_operations = len(self.atomicOperations)
+            print total_operations
             for operation in self.atomicOperations:
                 celeryobj.update_state(state='PROGRESS', meta={
                     'current_testcase': current_testcase,

@@ -17,11 +17,11 @@ class SelfAssessment(Singleton):
         self.basedir = basedir if basedir[-1] == "/" else basedir + "/"
 
     @Singleton._if_configured(SelfAssessmentException)
-    def __load_self_assessment(self, probename):
+    def __load_self_assessment(self, probename, cmid):
         try:
             parser = ConfigParser.SafeConfigParser()
             parser.optionxform = str
-            with codecs.open(self.basedir + probename + ".conf", 'r', encoding='utf-8') as f:
+            with codecs.open(self.basedir + cmid + "/" + probename + ".conf", 'r', encoding='utf-8') as f:
                 parser.readfp(f)
         except ConfigParser.ParsingError as err:
             raise SelfAssessmentException("Could not parse Self Assessment file for probe " + probename)

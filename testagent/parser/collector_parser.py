@@ -46,6 +46,7 @@ class CollectorParser(Parser):
             tcp = TestCaseParser()
             tcp.set_input(inside)
             tcp.set_probe(tot)
+            tcp.set_cm_id(cm_id)
             testcases = tcp.parse()
             for testcase_obj in testcases:
                 collector_obj.appendTestCase(testcase_obj)

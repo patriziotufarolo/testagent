@@ -42,6 +42,7 @@ class TestCaseParser(Parser):
                 tc = TestCase(testcase_id, testcase_description)
                 tip = TestInstanceParser()
                 tip.set_probe(self.get_probe())
+                tip.set_cm_id(self.get_cm_id())
                 tip.set_input("<TestInstances>" + (element.text if element.text is not None else '') + ''.join(
                     etree.tostring(child, pretty_print=False, method='c14n') for child in element if
                     child.tag == "TestInstance") + "</TestInstances>")

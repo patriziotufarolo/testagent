@@ -42,7 +42,6 @@ class start_certification(Task):
 
     def run(self, xml):
         ls = LoggingService()
-
         self.logger = get_task_logger('%s.%s#%s' % (__name__, self.__class__.__name__, str(self.request.id)))
 
         str_log_level = ls.get_parameter("evidences_log_level")
@@ -98,10 +97,11 @@ class start_certification(Task):
 
         all_testcases = len(my_collector.getTestcases())
         for testcase in my_collector.getTestcases():
-            probe.probe.appendAtomics()
-            probe.probe.setLogger(self.log)
+            this_probe = probe.probe()
+            this_probe.appendAtomics()
+            this_probe.setLogger(self.log)
 
-            testcase_result = probe.probe.run(self, current_testcase + 1, all_testcases, testcase)
+            testcase_result = this_probe.run(self, current_testcase + 1, all_testcases, testcase)
             results.append(testcase_result)
             current_testcase += 1
         sys.stdout = oldstdout
