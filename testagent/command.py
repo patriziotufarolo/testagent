@@ -27,7 +27,6 @@ from testagent.services.WorkerService import WorkerService
 from testagent.services.LoggingService import LoggingService
 from testagent.selfassessment import SelfAssessment
 
-
 class TestAgentCommand(Command):
 
     def run_from_argv(self, prog_name, argv=None, command=None):
@@ -62,8 +61,8 @@ class TestAgentCommand(Command):
             TestAgentAPI().start()
             WorkerService().configure(self.app, options)
             WorkerService().start_worker()
-            from multiprocessing import Process
-            Process(target=self.test_empty_probe).start()
+            #from multiprocessing import Process
+            #Process(target=self.test_empty_probe).start()
             io_loop = ioloop.IOLoop.instance()
             io_loop.start()
         except KeyboardInterrupt:

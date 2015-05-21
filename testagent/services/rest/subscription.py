@@ -11,6 +11,8 @@ from testagent.api.ViewBaseHandler import BaseHandler
 from tornado.web import HTTPError
 from tornado.escape import json_decode
 from testagent.services.WorkerService import WorkerService
+from ConfigParser import SafeConfigParser
+from ConfigParser import DuplicateSectionError
 import json
 
 class BaseTaskHandler(BaseHandler):
@@ -51,6 +53,7 @@ class SubscriptionService(BaseTaskHandler):
                 result[item] = kwargs[item]
             except KeyError:
                 result[item] = default_opts[item]
+
             if result[item] is None:
                 result[item] = ""
             else:
@@ -65,13 +68,40 @@ class SubscriptionService(BaseTaskHandler):
             else:
                 out.write(item + " = \"" + result[item] + "\"\n")
         out.close()
-        WorkerService().stop_worker()
+
+        '''
+        cp = SafeConfigParser(allow_no_value=True)
+
+        try:
+            cp.read(output_file + "3")
+        except:
+            pass
+
+        try:
+            cp.add_section('subscription')
+        except DuplicateSectionError:
+            pass
+
+        for item in result:
+            cp.set('subscription', item, unicode(result[item]))
+        try:
+            with open(output_file + "3", "w") as output_file_opened:
+                cp.write(output_file_opened)
+        except IOError:
+            raise Exception("Can't open configuration file for writing")
+        '''
         app = WorkerService().get_app()
+        try:
+            WorkerService().stop_worker()
+        except:
+            pass
         WorkerService().deconfigure()
         from tornado.options import parse_config_file
+        # parse_config_file("testagent/utils/subscription_config.py")
         parse_config_file(output_file)
+        print(options.group_dict("communication"))
         WorkerService().configure(app, options)
         WorkerService().start_worker()
 
-        self.write(result)
+        self.write(options.group_dict("communication"))
 

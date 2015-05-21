@@ -14,6 +14,7 @@ from ssl import CERT_REQUIRED
 from testagent.utils.Singleton import Singleton
 from testagent.exceptions.WorkerServiceException import WorkerServiceException
 from testagent.options import default_options
+import testagent.subscription_options
 
 @task_success.connect
 def task_success_handler(sender=None, result=None, args=None, kwargs=None, **kwds):
@@ -167,9 +168,11 @@ class WorkerService(Singleton):
         wrk = celery.bin.worker.worker(app=self.app)
         wrk.run()
 
-    @Singleton._if_configured(WorkerServiceException)
     def get_options(self):
-        return self.options
+        try:
+            return self.options if self.options else default_options
+        except:
+            return default_options
 
     @Singleton._if_configured(WorkerServiceException)
     def start_worker(self):
@@ -182,5 +185,6 @@ class WorkerService(Singleton):
     def stop_worker(self):
         if self.worker_process.is_alive():
             self.worker_process.terminate()
+            self.app.close()
         if self.status == "started":
             self.status = "stopped"

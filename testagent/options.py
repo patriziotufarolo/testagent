@@ -9,7 +9,7 @@ Date: 20/04/15
 '''
 from tornado.options import define
 from tornado.options import options
-DEFAULT_CONFIG_FILE = '/etc/testagent/testagent.conf'
+DEFAULT_CONFIG_FILE = 'testagent.conf'
 DEFAULT_SELFASSESSMENT_DIR = '/etc/testagent/selfassessment'
 DEFAULT_EVIDENCES_DIR = 'var/log/testagent/evidences'
 DEFAULT_MAIN_LOGFILE = 'var/log/testagent/testagent.log'
@@ -27,7 +27,7 @@ subscription service settings
 
 define("subscription_port", default=8081,
        help="Subscription service listening port", type=int, group="subscription service")
-define("subscription_address", default='',
+define("subscription_address", default='0.0.0.0',
        help="Subscription service listening address", type=str, group="subscription service")
 define("subscription_server_cert", type=str, default=None,
        help="SSL certificate file for the subscription service", group="subscription service")
@@ -88,4 +88,6 @@ define("evidences_syslog_port", default=514,
        help="Syslog server address", type=int, group="main")
 define("evidences_log_level", default="info",
        help="Evidences log level", type=str, group="main")
+
+
 default_options = options

@@ -27,7 +27,6 @@ define("broker_ssl_certfile",
 
 define("backend_broker_url", default="", help="Backend broker URL", type=str, group="communication")
 
-
 define("tasks_exchange_name", default="celery", help="Exchange name for sending tasks (default: celery)", type=str, group="communication")
 define("tasks_exchange_type", default="direct", help="Exchange type for sending tasks (default: direct)", type=str, group="communication")
 define("tasks_queue_name", default="celery", help="Queue name for sending tasks (default: celery)", type=str, group="communication")
