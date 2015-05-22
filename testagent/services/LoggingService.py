@@ -13,62 +13,45 @@ from testagent.exceptions.LoggingServiceException import LoggingServiceException
 import logging
 from functools import wraps
 
+def _not_configured_logger(this_exception):
+    if not this_exception or not issubclass(this_exception, SingletonException):
+        this_exception = SingletonException
+
+    def _configured_decorator(func):
+        @wraps(func)
+        def wrapper(inst, *args, **kwargs):
+            if not inst.check_configured():
+                raise this_exception("Object not configured properly")
+            else:
+                return func(inst, *args, **kwargs)
+
+        return wrapper
+
+    return _configured_decorator
+
+
+def _configured_logger(this_exception):
+    if not this_exception or not issubclass(this_exception, SingletonException):
+        this_exception = SingletonException
+
+    def _configured_decorator(func):
+        @wraps(func)
+        def wrapper(inst, *args, **kwargs):
+            if inst.check_configured():
+                raise this_exception("Object not configured properly")
+            else:
+                return func(inst, *args, **kwargs)
+
+        return wrapper
+
+    return _configured_decorator
+
+
 class LoggingService(Singleton):
     _log_parameters = {}
     logger = None
     file_logger = None
     _logger_configured = False
-
-    @staticmethod
-    def _not_configured_logger(this_exception):
-        if not this_exception or not issubclass(this_exception, SingletonException):
-            this_exception = SingletonException
-
-        def _configured_decorator(func):
-            @wraps(func)
-            def wrapper(inst, *args, **kwargs):
-                if not inst.check_configured():
-                    raise this_exception("Object not configured properly")
-                else:
-                    return func(inst, *args, **kwargs)
-
-            return wrapper
-
-        return _configured_decorator
-
-    @staticmethod
-    def _configured_logger(this_exception):
-        if not this_exception or not issubclass(this_exception, SingletonException):
-            this_exception = SingletonException
-
-        def _configured_decorator(func):
-            @wraps(func)
-            def wrapper(inst, *args, **kwargs):
-                if inst.check_configured():
-                    raise this_exception("Object not configured properly")
-                else:
-                    return func(inst, *args, **kwargs)
-
-            return wrapper
-
-        return _configured_decorator
-
-    @staticmethod
-    def _if_configured(this_exception):
-        if not this_exception or not issubclass(this_exception, SingletonException):
-            this_exception = SingletonException
-
-        def _configured_decorator(func):
-            @wraps(func)
-            def wrapper(inst, *args, **kwargs):
-                if not inst.check_configured():
-                    raise this_exception("Object not configured properly")
-                else:
-                    return func(inst, *args, **kwargs)
-
-            return wrapper
-
-        return _configured_decorator
 
     def configure(self, options):
         self._log_parameters["evidences_directory"] = options.evidences_directory
