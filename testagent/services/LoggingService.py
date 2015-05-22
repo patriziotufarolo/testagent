@@ -63,7 +63,7 @@ class LoggingService(Singleton):
             self._log_parameters["evidences_use_syslog"] = True
         super(LoggingService, self).configure()
 
-    @_configured_logger
+    @_configured_logger(LoggingServiceException)
     def setup_logger(self):
         self.logger = logging.getLogger("TestAgent")
         self.file_logger = logging.FileHandler("/var/log/testagent/testagent.log")
@@ -79,11 +79,11 @@ class LoggingService(Singleton):
         else:
             raise LoggingServiceException("Parameter not defined")
 
-    @_not_configured_logger
+    @_not_configured_logger(LoggingServiceException)
     def get_generic_logger(self):
         return self.logger
 
-    @_not_configured_logger
+    @_not_configured_logger(LoggingServiceException)
     def get_file_handler(self):
         return self.file_logger
 
