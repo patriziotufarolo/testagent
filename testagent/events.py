@@ -125,10 +125,10 @@ class Events(threading.Thread):
                     import thread
                 thread.interrupt_main()
             except Exception as e:
-                logger.error("Failed to capture events: '%s', "
+                self.logger.error("Failed to capture events: '%s', "
                              "trying again in %s seconds.",
                              e, try_interval)
-                logger.debug(e, exc_info=True)
+                self.logger.debug(e, exc_info=True)
                 time.sleep(try_interval)
 
     def on_enable_events(self):
