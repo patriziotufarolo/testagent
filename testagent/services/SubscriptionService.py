@@ -30,11 +30,10 @@ class TestAgentSubscription(tornado.web.Application, Singleton):
 
     def __init__(self):
         Singleton.__init__(self)
-        self.options = default_options
 
     def configure(self, options, logger, **kwargs):
         Singleton.configure(self)
-        options = options if options else self.options
+        options = options if options else default_options
         self.ssl = None
         self.logger = logger
         if options.subscription_server_cert and options.subscription_server_key:

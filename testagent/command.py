@@ -33,7 +33,7 @@ class TestAgentCommand(Command):
 
     def run_from_argv(self, prog_name, argv=None, command=None):
         argv = list(filter(self.testagent_option, argv))
-        logger = LoggingService().get_generic_logger()
+
         try:
             parse_config_file(options.conf, final=False)
         except IOError:
@@ -55,9 +55,10 @@ class TestAgentCommand(Command):
             enable_pretty_logging()
 
         try:
+            LoggingService().configure(options)
+            logger = LoggingService().get_generic_logger()
             SelfAssessment().configure(options.selfassessment_dir)
             TestAgentSubscription().configure(options, logger)
-            LoggingService().configure(options)
             TestAgentAPI().configure(options, self.app, logger)
             TestAgentSubscription().start()
             TestAgentAPI().start()

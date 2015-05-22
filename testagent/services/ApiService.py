@@ -32,12 +32,11 @@ class TestAgentAPI(tornado.web.Application, Singleton):
 
     def __init__(self, **kwargs):
         Singleton.__init__(self)
-        self.options = default_options
 
     def configure(self, options, capp, logger, **kwargs):
         Singleton.configure(self)
         self.logger = logger
-        self.options = options if options else self.options
+        self.options = options if options else default_options
         self.ssl = None
         if options.apis_server_cert and options.apis_server_key:
             self.ssl = dict(
