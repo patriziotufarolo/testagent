@@ -10,7 +10,7 @@ Date: 20/04/15
 '''
 
 import sys
-
+import signal
 import tornado.log
 
 from tornado.options import options
@@ -54,6 +54,11 @@ class TestAgentCommand(Command):
         if options.debug and options.logging == 'info':
             options.logging = "debug"
             enable_pretty_logging()
+
+        def sigterm_handler(signal, frame):
+            logger.info('SIGTERM detected, shutting down')
+            sys.exit(0)
+        signal.signal(signal.SIGTERM, sigterm_handler)
 
         LoggingService().setup_logger()
         pidfile = daemon.pidfile.PIDLockFile("/var/run/testagent.pid")
