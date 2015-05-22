@@ -33,11 +33,9 @@ import daemon, daemon.pidfile
 class TestAgentCommand(Command):
 
     def run_from_argv(self, prog_name, argv=None, command=None):
-        def sigterm_handler():
+        def sigterm_handler(signum, frame):
             logger.info('SIGTERM detected, shutting down')
             sys.exit(0)
-        signal.signal(signal.SIGTERM, sigterm_handler)
-        signal.signal(signal.SIGINT, sigterm_handler)
         argv = list(filter(self.testagent_option, argv))
 
         try:
