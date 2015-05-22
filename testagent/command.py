@@ -27,13 +27,13 @@ from testagent.services.WorkerService import WorkerService, WorkerServiceExcepti
 from testagent.services.LoggingService import LoggingService
 from testagent.selfassessment import SelfAssessment
 
-logger = LoggingService().get_generic_logger()
+
 
 class TestAgentCommand(Command):
 
     def run_from_argv(self, prog_name, argv=None, command=None):
         argv = list(filter(self.testagent_option, argv))
-
+        logger = LoggingService().get_generic_logger()
         try:
             parse_config_file(options.conf, final=False)
         except IOError:
