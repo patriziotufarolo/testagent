@@ -68,7 +68,7 @@ define("inspect_timeout", default=1000, type=float,
        help="Inspect timeout (in milliseconds)", group="events")
 define("max_tasks", type=int, default=10000,
        help="Maximum number of tasks to keep in memory", group="main")
-define("db", type=str, default='testagent.db',
+define("db", type=str, default='/etc/testagent/testagent.db',
        help="Database file", group="events")
 
 '''
