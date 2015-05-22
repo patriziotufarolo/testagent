@@ -20,7 +20,7 @@ def _not_configured_logger(this_exception):
     def _configured_decorator(func):
         @wraps(func)
         def wrapper(inst, *args, **kwargs):
-            if not inst.check_configured():
+            if not inst.check_configured_logger():
                 raise this_exception("Object not configured properly")
             else:
                 return func(inst, *args, **kwargs)
@@ -37,7 +37,7 @@ def _configured_logger(this_exception):
     def _configured_decorator(func):
         @wraps(func)
         def wrapper(inst, *args, **kwargs):
-            if inst.check_configured():
+            if inst.check_configured_logger():
                 raise this_exception("Object not configured properly")
             else:
                 return func(inst, *args, **kwargs)
