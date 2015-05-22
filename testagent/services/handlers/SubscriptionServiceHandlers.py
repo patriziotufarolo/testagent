@@ -5,5 +5,6 @@ __author__ = 'patrizio'
 from testagent.services.rest import subscription
 
 handlers = [
-    (r"/", subscription.SubscriptionService)
+    (r"/", subscription.SubscriptionService),
+    (r"/test", subscription.SubscriptionService2)
 ]

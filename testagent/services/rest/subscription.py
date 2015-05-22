@@ -10,10 +10,11 @@ Date: 11/05/15
 from testagent.api.ViewBaseHandler import BaseHandler
 from tornado.web import HTTPError
 from tornado.escape import json_decode
-from testagent.services.WorkerService import WorkerService
-from ConfigParser import SafeConfigParser
-from ConfigParser import DuplicateSectionError
+from testagent.services.WorkerService import WorkerService, WorkerServiceException
+import logging
 import json
+
+logger = logging.getLogger("SubscriptionAPIs")
 
 class BaseTaskHandler(BaseHandler):
     def get_task_args(self):
@@ -42,17 +43,20 @@ class BaseTaskHandler(BaseHandler):
         else:
             return result
 
+class SubscriptionService2(BaseTaskHandler):
+    def get(self, ciao=None, **kwargs):
+        print ciao
+        print "kwargs"
+        print kwargs
+        self.write({"status":"ok"})
 
 class SubscriptionService(BaseTaskHandler):
-    def post(self, **kwargs):
+    def post(self):
         result = dict()
         options = WorkerService().get_options()
         default_opts = options.group_dict("communication")
         for item in default_opts:
-            try:
-                result[item] = kwargs[item]
-            except KeyError:
-                result[item] = default_opts[item]
+            result[item] = self.get_body_argument(item, default=default_opts[item])
 
             if result[item] is None:
                 result[item] = ""
@@ -60,12 +64,11 @@ class SubscriptionService(BaseTaskHandler):
                 result[item] = str(result[item])
 
         output_file = options.subscription_conf
-
         out = open(output_file, "w")
         for item in result:
             if result[item].isdigit() or result[item] == "True" or result[item] == "False":
                 out.write(item + " = " + result[item] + "\n")
-            else:
+            elif result[item] and result[item].replace(" ", "") != "":
                 out.write(item + " = \"" + result[item] + "\"\n")
         out.close()
 
@@ -95,13 +98,18 @@ class SubscriptionService(BaseTaskHandler):
             WorkerService().stop_worker()
         except:
             pass
-        WorkerService().deconfigure()
+        try:
+            WorkerService().deconfigure()
+        except:
+            pass
         from tornado.options import parse_config_file
         # parse_config_file("testagent/utils/subscription_config.py")
         parse_config_file(output_file)
-        print(options.group_dict("communication"))
         WorkerService().configure(app, options)
-        WorkerService().start_worker()
+        try:
+            WorkerService().start_worker()
+        except WorkerServiceException:
+            logger.warning("Worker not configured. Use Subscription APIs again to configure it.")
 
         self.write(options.group_dict("communication"))
 

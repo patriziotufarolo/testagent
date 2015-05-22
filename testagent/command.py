@@ -23,9 +23,11 @@ from testagent.options import DEFAULT_CONFIG_FILE
 from testagent.subscription_options import DEFAULT_SUBSCRIPTION_FILE
 from testagent.services.SubscriptionService import TestAgentSubscription
 from testagent.services.ApiService import TestAgentAPI
-from testagent.services.WorkerService import WorkerService
+from testagent.services.WorkerService import WorkerService, WorkerServiceException
 from testagent.services.LoggingService import LoggingService
 from testagent.selfassessment import SelfAssessment
+import logging, time
+logger = logging.getLogger("main")
 
 class TestAgentCommand(Command):
 
@@ -60,13 +62,16 @@ class TestAgentCommand(Command):
             TestAgentSubscription().start()
             TestAgentAPI().start()
             WorkerService().configure(self.app, options)
-            WorkerService().start_worker()
+            try:
+                WorkerService().start_worker()
+            except WorkerServiceException:
+                logger.warning("Worker not configured. Use Subscription APIs to configure it.")
             from multiprocessing import Process
+            time.sleep(10)
             Process(target=self.test_empty_probe).start()
             Process(target=self.test_empty_probe).start()
             Process(target=self.test_empty_probe).start()
             Process(target=self.test_empty_probe).start()
-
             io_loop = ioloop.IOLoop.instance()
             io_loop.start()
         except KeyboardInterrupt:

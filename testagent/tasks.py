@@ -16,7 +16,6 @@ import importlib
 import sys
 
 app = WorkerService()
-app.configure()
 
 
 class StreamToLogger(object):

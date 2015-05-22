@@ -123,7 +123,7 @@ class WorkerService(Singleton):
             self.__custom_banner()
             self.status = "stopped"
             self.worker_process = Process()
-
+            print self.CeleryConfiguration
             self.CeleryConfiguration.BROKER_URL = options.broker_url
             self.CeleryConfiguration.CELERY_TIMEZONE = options.timezone
             self.CeleryConfiguration.CELERY_RESULT_BACKEND = options.backend_broker_url
@@ -149,7 +149,6 @@ class WorkerService(Singleton):
             self.CeleryConfiguration.RESULT_EXCHANGE_TYPE = options.results_exchange_type
             self.CeleryConfiguration.RESULT_QUEUE_NAME = options.results_queue_name
             self.CeleryConfiguration.RESULT_ROUTING_KEY = options.results_routing_key
-
             self.app.config_from_object(self.CeleryConfiguration)
             self.app.connection = self.app.broker_connection
             self.app.loader.import_default_modules()
@@ -159,9 +158,9 @@ class WorkerService(Singleton):
     def deconfigure(self):
         self._configured = False
 
-    @Singleton._if_configured(WorkerServiceException)
     def get_app(self):
-        return self.app
+        if self.app:
+            return self.app
 
     @Singleton._if_configured(WorkerServiceException)
     def _worker_thread(self):
@@ -185,6 +184,5 @@ class WorkerService(Singleton):
     def stop_worker(self):
         if self.worker_process.is_alive():
             self.worker_process.terminate()
-            self.app.close()
         if self.status == "started":
             self.status = "stopped"
