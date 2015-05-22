@@ -29,10 +29,37 @@ from testagent.selfassessment import SelfAssessment
 import daemon, daemon.pidfile
 
 
-
+import time
 class TestAgentCommand(Command):
 
     def run_from_argv(self, prog_name, argv=None, command=None):
+        io_loop = ioloop.IOLoop.instance()
+        LoggingService().setup_logger()
+        LoggingService().configure(options)
+        logger = LoggingService().get_generic_logger()
+
+        def shutdown_http():
+            logger.info('Will shutdown in %s seconds ...', 30)
+            io_loop = ioloop.IOLoop.instance()
+
+            deadline = time.time() + 30
+
+            def stop_loop():
+                now = time.time()
+                if now < deadline and (io_loop._callbacks or io_loop._timeouts):
+                    io_loop.add_timeout(now + 1, stop_loop)
+                else:
+                    io_loop.stop()
+                    logger.info('Shutdown')
+            stop_loop()
+
+        def sigterm_handler(signal, frame):
+            logger.info('SIGTERM detected, shutting down')
+            ioloop.IOLoop.instance().add_callback(shutdown_http)
+            sys.exit(0)
+        signal.signal(signal.SIGTERM, sigterm_handler)
+        signal.signal(signal.SIGINT, sigterm_handler)
+
         argv = list(filter(self.testagent_option, argv))
 
         try:
@@ -55,17 +82,9 @@ class TestAgentCommand(Command):
             options.logging = "debug"
             enable_pretty_logging()
 
-        def sigterm_handler(signal, frame):
-            logger.info('SIGTERM detected, shutting down')
-            sys.exit(0)
-        signal.signal(signal.SIGTERM, sigterm_handler)
-
-        LoggingService().setup_logger()
         pidfile = daemon.pidfile.PIDLockFile("/var/run/testagent.pid")
         with daemon.DaemonContext(pidfile=pidfile, files_preserve=[LoggingService().get_file_handler().stream]):
             try:
-                LoggingService().configure(options)
-                logger = LoggingService().get_generic_logger()
                 SelfAssessment().configure(options.selfassessment_dir)
                 TestAgentSubscription().configure(options, logger)
                 TestAgentAPI().configure(options, self.app, logger)
@@ -77,7 +96,7 @@ class TestAgentCommand(Command):
                 except WorkerServiceException:
                     logger.warning("Worker not configured. Use Subscription APIs to configure it.")
 
-                io_loop = ioloop.IOLoop.instance()
+
                 io_loop.start()
             except KeyboardInterrupt:
                 sys.exit()
