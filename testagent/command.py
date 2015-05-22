@@ -58,6 +58,7 @@ class TestAgentCommand(Command):
         pidfile = daemon.pidfile.PIDLockFile("/var/run/testagent.pid")
         with daemon.DaemonContext(pidfile=pidfile, files_preserve=[LoggingService().get_file_handler().stream]):
             try:
+                LoggingService().setup_logger()
                 LoggingService().configure(options)
                 logger = LoggingService().get_generic_logger()
                 SelfAssessment().configure(options.selfassessment_dir)

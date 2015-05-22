@@ -21,7 +21,6 @@ def main():
     TestAgentSubscription()
     TestAgentAPI()
     WorkerService()
-    LoggingService().setup_logger()
     SelfAssessment()
     try:
         test_agent = TestAgentCommand()
