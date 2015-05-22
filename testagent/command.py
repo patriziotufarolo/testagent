@@ -33,7 +33,7 @@ import daemon, daemon.pidfile
 class TestAgentCommand(Command):
 
     def run_from_argv(self, prog_name, argv=None, command=None):
-        def sigterm_handler(signal, frame):
+        def sigterm_handler():
             logger.info('SIGTERM detected, shutting down')
             sys.exit(0)
         signal.signal(signal.SIGTERM, sigterm_handler)
@@ -62,7 +62,10 @@ class TestAgentCommand(Command):
 
         LoggingService().setup_logger()
         pidfile = daemon.pidfile.PIDLockFile("/var/run/testagent.pid")
-        with daemon.DaemonContext(pidfile=pidfile, files_preserve=[LoggingService().get_file_handler().stream]):
+        with daemon.DaemonContext(pidfile=pidfile, files_preserve=[LoggingService().get_file_handler().stream]) as context:
+            context.signal_map = {
+                signal.SIGTERM: sigterm_handler
+            }
             try:
                 LoggingService().configure(options)
                 logger = LoggingService().get_generic_logger()
@@ -79,8 +82,8 @@ class TestAgentCommand(Command):
 
                 io_loop = ioloop.IOLoop.instance()
                 io_loop.start()
-            except KeyboardInterrupt:
-                sys.exit()
+            except (KeyboardInterrupt, SystemExit):
+                pass
 
     def handle_argv(self, prog_name, argv, command=None):
         return self.run_from_argv(prog_name, argv)
