@@ -18,16 +18,9 @@ Date: 20/04/15
 
 from testagent.command import TestAgentCommand
 def main():
-    TestAgentSubscription()
-    TestAgentAPI()
-    WorkerService()
-    SelfAssessment()
-    LoggingService()
-    try:
-        test_agent = TestAgentCommand()
-        test_agent.execute_from_commandline()
-    except:
-        raise
+    with daemon.DaemonContext(stdout=sys.stdout):
+            daem = MainDaemon()
+            daem.run()
 
 class MainDaemon(object):
     def __init__(self):
@@ -46,6 +39,4 @@ class MainDaemon(object):
             raise
 import sys
 if __name__ == "__main__":
-    with daemon.DaemonContext(stdout=sys.stdout):
-        daem = MainDaemon()
-        daem.run()
+    main()
