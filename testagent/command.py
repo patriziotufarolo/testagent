@@ -62,10 +62,11 @@ class TestAgentCommand(Command):
 
         LoggingService().setup_logger()
         pidfile = daemon.pidfile.PIDLockFile("/var/run/testagent.pid")
-        with daemon.DaemonContext(pidfile=pidfile, files_preserve=[LoggingService().get_file_handler().stream]) as context:
-            context.signal_map = {
-                signal.SIGTERM: sigterm_handler
-            }
+        context = daemon.DaemonContext(pidfile=pidfile, files_preserve=[LoggingService().get_file_handler().stream])
+        context.signal_map = {
+            signal.SIGTERM: sigterm_handler
+        }
+        with context:
             try:
                 LoggingService().configure(options)
                 logger = LoggingService().get_generic_logger()
