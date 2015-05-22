@@ -19,10 +19,6 @@ app = WorkerService()
 
 
 class StreamToLogger(object):
-    """
-    Fake file-like stream object that redirects writes to a logger instance.
-    """
-
     def __init__(self, logger, log_level=logging.INFO):
         self.logger = logger
         self.log_level = log_level
