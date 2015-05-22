@@ -21,7 +21,7 @@ LoggingService().setup_logger()
 
 def main():
     pidfile = daemon.pidfile.PIDLockFile("/var/run/testagent.pid")
-    with daemon.DaemonContext(pidfile=pidfile, files_preserve=LoggingService().get_file_handler().stream):
+    with daemon.DaemonContext(pidfile=pidfile, files_preserve=[LoggingService().get_file_handler().stream]):
         TestAgentSubscription()
         TestAgentAPI()
         WorkerService()
