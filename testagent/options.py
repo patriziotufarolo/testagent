@@ -13,6 +13,7 @@ DEFAULT_CONFIG_FILE = '/etc/testagent/testagent.conf'
 DEFAULT_SELFASSESSMENT_DIR = '/etc/testagent/selfassessment'
 DEFAULT_EVIDENCES_DIR = '/var/log/testagent/evidences'
 DEFAULT_MAIN_LOGFILE = '/var/log/testagent/testagent.log'
+CELERY_LOGFILE = '/var/log/testagent/celery.log'
 
 '''
 configuration args

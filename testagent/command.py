@@ -28,6 +28,10 @@ from testagent.services.LoggingService import LoggingService
 from testagent.selfassessment import SelfAssessment
 import logging, time
 logger = logging.getLogger("main")
+file_logger = logging.FileHandler("/var/log/testagent/testagent.log")
+file_logger.setLevel(logging.INFO)
+file_logger.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+logger.addHandler(file_logger)
 
 class TestAgentCommand(Command):
 

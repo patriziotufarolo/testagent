@@ -13,7 +13,7 @@ from ssl import CERT_REQUIRED
 
 from testagent.utils.Singleton import Singleton
 from testagent.exceptions.WorkerServiceException import WorkerServiceException
-from testagent.options import default_options
+from testagent.options import default_options, CELERY_LOGFILE
 import testagent.subscription_options
 
 @task_success.connect
@@ -165,7 +165,7 @@ class WorkerService(Singleton):
     @Singleton._if_configured(WorkerServiceException)
     def _worker_thread(self):
         wrk = celery.bin.worker.worker(app=self.app)
-        wrk.run()
+        wrk.run(logfile=CELERY_LOGFILE)
 
     def get_options(self):
         try:
