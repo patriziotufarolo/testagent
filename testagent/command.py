@@ -26,6 +26,7 @@ from testagent.services.ApiService import TestAgentAPI
 from testagent.services.WorkerService import WorkerService, WorkerServiceException
 from testagent.services.LoggingService import LoggingService
 from testagent.selfassessment import SelfAssessment
+import daemon, daemon.pidfile
 
 
 
@@ -54,24 +55,26 @@ class TestAgentCommand(Command):
             options.logging = "debug"
             enable_pretty_logging()
 
-        try:
-            LoggingService().configure(options)
-            logger = LoggingService().get_generic_logger()
-            SelfAssessment().configure(options.selfassessment_dir)
-            TestAgentSubscription().configure(options, logger)
-            TestAgentAPI().configure(options, self.app, logger)
-            TestAgentSubscription().start()
-            TestAgentAPI().start()
-            WorkerService().configure(self.app, options)
+        pidfile = daemon.pidfile.PIDLockFile("/var/run/testagent.pid")
+        with daemon.DaemonContext(pidfile=pidfile, files_preserve=[LoggingService().get_file_handler().stream]):
             try:
-                WorkerService().start_worker()
-            except WorkerServiceException:
-                logger.warning("Worker not configured. Use Subscription APIs to configure it.")
+                LoggingService().configure(options)
+                logger = LoggingService().get_generic_logger()
+                SelfAssessment().configure(options.selfassessment_dir)
+                TestAgentSubscription().configure(options, logger)
+                TestAgentAPI().configure(options, self.app, logger)
+                TestAgentSubscription().start()
+                TestAgentAPI().start()
+                WorkerService().configure(self.app, options)
+                try:
+                    WorkerService().start_worker()
+                except WorkerServiceException:
+                    logger.warning("Worker not configured. Use Subscription APIs to configure it.")
 
-            io_loop = ioloop.IOLoop.instance()
-            io_loop.start()
-        except KeyboardInterrupt:
-            sys.exit()
+                io_loop = ioloop.IOLoop.instance()
+                io_loop.start()
+            except KeyboardInterrupt:
+                sys.exit()
 
     def handle_argv(self, prog_name, argv, command=None):
         return self.run_from_argv(prog_name, argv)
