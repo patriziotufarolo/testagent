@@ -28,14 +28,14 @@ from testagent.services.LoggingService import LoggingService
 from testagent.selfassessment import SelfAssessment
 import daemon, daemon.pidfile
 
-
+def sigterm_handler(signum, frame):
+    LoggingService().get_generic_logger().warning('SIGTERM detected, shutting down')
+    sys.exit(0)
 
 class TestAgentCommand(Command):
 
     def run_from_argv(self, prog_name, argv=None, command=None):
-        def sigterm_handler(signum, frame):
-            logger.info('SIGTERM detected, shutting down')
-            sys.exit(0)
+
         argv = list(filter(self.testagent_option, argv))
 
         try:
@@ -82,7 +82,7 @@ class TestAgentCommand(Command):
                 io_loop = ioloop.IOLoop.instance()
                 io_loop.start()
             except (KeyboardInterrupt, SystemExit):
-                pass
+                sys.exit(0)
 
     def handle_argv(self, prog_name, argv, command=None):
         return self.run_from_argv(prog_name, argv)
