@@ -66,12 +66,7 @@ class TestAgentCommand(Command):
                 WorkerService().start_worker()
             except WorkerServiceException:
                 logger.warning("Worker not configured. Use Subscription APIs to configure it.")
-            from multiprocessing import Process
-            time.sleep(10)
-            Process(target=self.test_empty_probe).start()
-            Process(target=self.test_empty_probe).start()
-            Process(target=self.test_empty_probe).start()
-            Process(target=self.test_empty_probe).start()
+
             io_loop = ioloop.IOLoop.instance()
             io_loop.start()
         except KeyboardInterrupt:
@@ -79,52 +74,6 @@ class TestAgentCommand(Command):
 
     def handle_argv(self, prog_name, argv, command=None):
         return self.run_from_argv(prog_name, argv)
-
-
-    def test_empty_probe(self):
-        print("parto tra 10s")
-        import time ; time.sleep(10)
-        print("ok sto per partire")
-        from testagent.tasks import start_certification
-        start_certification.delay('''
-        <collector id="1" cmid="1" probe_driver="EmptyProbeDelay">
-                <TestCases>
-                    <TestCase>
-                        <ID>1</ID>
-                        <Description>TestCase1</Description>
-                        <TestInstance Operation="1">
-                            <Preconditions/>
-                            <HiddenCommunications/>
-                            <Input>
-                                <Item key="Input1" value="Value1" />
-                                <Item key="Input2" value="Value2" />
-                            </Input>
-                            <ExpectedOutput/>
-                            <PostConditions/>
-                        </TestInstance>
-                        <TestInstance Operation="3">
-                            <Preconditions/>
-                            <HiddenCommunications/>
-                            <Input>
-                                <Item key="Input6" value="Value6" />
-                            </Input>
-                            <ExpectedOutput/>
-                            <PostConditions/>
-                        </TestInstance>
-                        <TestInstance Operation="2">
-                            <Preconditions/>
-                            <HiddenCommunications/>
-                            <Input>
-                                <Item key="Input8" value="Value8" />
-                                <Item key="Input5" value="Value9" />
-                            </Input>
-                            <ExpectedOutput/>
-                            <PostConditions/>
-                        </TestInstance>
-                    </TestCase>
-                </TestCases>
-                </collector>
-        ''')
 
     def early_version(self, argv):
         if '--version' in argv:

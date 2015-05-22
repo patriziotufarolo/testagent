@@ -9,10 +9,10 @@ Date: 20/04/15
 '''
 from tornado.options import define
 from tornado.options import options
-DEFAULT_CONFIG_FILE = 'testagent.conf'
-DEFAULT_SELFASSESSMENT_DIR = 'etc/testagent/selfassessment'
-DEFAULT_EVIDENCES_DIR = 'var/log/testagent/evidences'
-DEFAULT_MAIN_LOGFILE = 'var/log/testagent/testagent.log'
+DEFAULT_CONFIG_FILE = '/etc/testagent/testagent.conf'
+DEFAULT_SELFASSESSMENT_DIR = '/etc/testagent/selfassessment'
+DEFAULT_EVIDENCES_DIR = '/var/log/testagent/evidences'
+DEFAULT_MAIN_LOGFILE = '/var/log/testagent/testagent.log'
 
 '''
 configuration args

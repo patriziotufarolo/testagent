@@ -10,7 +10,7 @@ Date: 13/05/15
 from tornado.options import define
 DEFAULT_SUBSCRIPTION_FILE = 'subscription.conf'
 
-define("subscription_conf", default="subscription.conf", help="Subscription settings", group="subscription")
+define("subscription_conf", default="/etc/testagent/subscription.conf", help="Subscription settings", group="subscription")
 
 define("broker_url",
        help="Broker URL", type=str, group="communication")
