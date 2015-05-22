@@ -44,7 +44,7 @@ class MainDaemon(object):
             test_agent.execute_from_commandline()
         except:
             raise
-
+import sys
 if __name__ == "__main__":
     with daemon.DaemonContext(stdout=sys.stdout):
         daem = MainDaemon()
