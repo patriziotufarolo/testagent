@@ -23,8 +23,6 @@ from testagent.options import default_options
 from testagent.utils import abs_path
 from testagent.exceptions.SubscriptionServiceException import SubscriptionServiceException
 
-logger = logging.getLogger(__name__)
-
 class TestAgentSubscription(tornado.web.Application, Singleton):
     pool_executor_cls = ThreadPoolExecutor
     max_workers = 1
@@ -34,10 +32,11 @@ class TestAgentSubscription(tornado.web.Application, Singleton):
         Singleton.__init__(self)
         self.options = default_options
 
-    def configure(self, options, **kwargs):
+    def configure(self, options, logger, **kwargs):
         Singleton.configure(self)
         options = options if options else self.options
         self.ssl = None
+        self.logger = logger
         if options.subscription_server_cert and options.subscription_server_key:
             self.ssl = dict(
                 certfile=abs_path(options.subscription_server_cert),
@@ -63,7 +62,7 @@ class TestAgentSubscription(tornado.web.Application, Singleton):
             ssl_options=self.ssl,
             xheaders=True
         )
-        logger.info("Subscription APIs available at http%s://%s:%s" % ('s' if self.ssl else '', self.options.subscription_address, self.options.subscription_port))
+        self.logger.info("Subscription APIs available at http%s://%s:%s" % ('s' if self.ssl else '', self.options.subscription_address, self.options.subscription_port))
         self.started = True
 
     @Singleton._if_configured(SubscriptionServiceException)
@@ -81,6 +80,3 @@ class TestAgentSubscription(tornado.web.Application, Singleton):
     @Singleton._if_configured(SubscriptionServiceException)
     def delay(self, method, *args, **kwargs):
         return self.pool.submit(partial(method, *args, **kwargs))
-
-
-logger = logging.getLogger(__name__)

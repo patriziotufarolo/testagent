@@ -25,8 +25,6 @@ from testagent.events import Events
 
 from testagent.exceptions.ApiServiceException import ApiServiceException
 
-logger = logging.getLogger(__name__)
-
 class TestAgentAPI(tornado.web.Application, Singleton):
     pool_executor_cls = ThreadPoolExecutor
     max_workers = 4
@@ -36,8 +34,9 @@ class TestAgentAPI(tornado.web.Application, Singleton):
         Singleton.__init__(self)
         self.options = default_options
 
-    def configure(self, options, capp, **kwargs):
+    def configure(self, options, capp, logger, **kwargs):
         Singleton.configure(self)
+        self.logger = logger
         self.options = options if options else self.options
         self.ssl = None
         if options.apis_server_cert and options.apis_server_key:
@@ -64,7 +63,7 @@ class TestAgentAPI(tornado.web.Application, Singleton):
     def start(self):
         self.pool = self.pool_executor_cls(max_workers=self.max_workers)
         self.events.start()
-        logger.info("APIs available at http%s://%s:%s" % ('s' if self.ssl else '', self.options.apis_address, self.options.apis_port))
+        self.logger.info("APIs available at http%s://%s:%s" % ('s' if self.ssl else '', self.options.apis_address, self.options.apis_port))
         self.listen(self.options.apis_port,
                     address=self.options.apis_address,
                     ssl_options=self.ssl,
@@ -89,6 +88,3 @@ class TestAgentAPI(tornado.web.Application, Singleton):
     def transport(self):
         return getattr(self.capp.connection().transport,
                        driver_type=None)
-
-
-logger = logging.getLogger(__name__)

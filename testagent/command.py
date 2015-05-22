@@ -60,9 +60,9 @@ class TestAgentCommand(Command):
 
         try:
             SelfAssessment().configure(options.selfassessment_dir)
-            TestAgentSubscription().configure(options)
+            TestAgentSubscription().configure(options, logger)
             LoggingService().configure(options)
-            TestAgentAPI().configure(options, self.app)
+            TestAgentAPI().configure(options, self.app, logger)
             TestAgentSubscription().start()
             TestAgentAPI().start()
             WorkerService().configure(self.app, options)
