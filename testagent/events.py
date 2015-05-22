@@ -33,7 +33,7 @@ except ImportError:
     from .utils.backports.collections import Counter
 
 
-logger = logging.getLogger(__name__)
+
 
 
 class EventsState(State):
@@ -62,25 +62,25 @@ class Events(threading.Thread):
     events_enable_interval = 5000
 
     def __init__(self, capp, db=None, persistent=False,
-                 enable_events=True, io_loop=None, **kwargs):
+                 enable_events=True, io_loop=None, logger=None, **kwargs):
         threading.Thread.__init__(self)
         self.daemon = True
 
         self.io_loop = io_loop or IOLoop.instance()
         self.capp = capp
-
+        self.logger = logger or logging.getLogger(__name__)
         self.db = db
         self.persistent = persistent
         self.enable_events = enable_events
         self.state = None
 
         if self.persistent and celery.__version__ < '3.0.15':
-            logger.warning('Persistent mode is available with '
+            self.logger.warning('Persistent mode is available with '
                            'Celery 3.0.15 and later')
             self.persistent = False
 
         if self.persistent:
-            logger.debug("Loading state from '%s'...", self.db)
+            self.logger.debug("Loading state from '%s'...", self.db)
             state = shelve.open(self.db)
             if state:
                 self.state = state['events']
@@ -100,7 +100,7 @@ class Events(threading.Thread):
 
     def stop(self):
         if self.persistent:
-            logger.debug("Saving state to '%s'...", self.db)
+            self.logger.debug("Saving state to '%s'...", self.db)
             state = shelve.open(self.db)
             state['events'] = self.state
             state.close()
@@ -137,7 +137,7 @@ class Events(threading.Thread):
         try:
             self.capp.control.enable_events()
         except Exception as e:
-            logger.debug("Failed to enable events: '%s'", e)
+            self.logger.debug("Failed to enable events: '%s'", e)
 
     def on_event(self, event):
         # Call EventsState.event in ioloop thread to avoid synchronization

@@ -54,7 +54,8 @@ class TestAgentAPI(tornado.web.Application, Singleton):
                                         db=self.options.db,
                                         persistent=self.options.persistent,
                                         enable_events=self.options.enable_events,
-                                        max_tasks_in_memory=self.options.max_tasks)
+                                        max_tasks_in_memory=self.options.max_tasks,
+                                        logger=self.logger)
         self.started = False
         atexit.register(self.stop)
         self.http_server = HTTPServer(self, ssl_options=self.ssl)
