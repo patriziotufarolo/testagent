@@ -26,7 +26,7 @@ class LoggingService(Singleton):
             self._log_parameters["evidences_syslog_port"] = options.evidences_syslog_port
             self._log_parameters["evidences_use_syslog"] = True
 
-        self.logger = logging.get_logger("TestAgent")
+        self.logger = logging.getLogger("TestAgent")
         self.file_logger = logging.FileHandler("/var/log/testagent/testagent.log")
         self.file_logger.setLevel(logging.INFO)
         self.file_logger.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
