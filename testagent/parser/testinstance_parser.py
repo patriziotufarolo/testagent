@@ -36,12 +36,15 @@ class TestInstanceParser(Parser):
                         if elements.tag == "Input":
                             for inputitem in elements:
                                 input_key = inputitem.get("key")
+                                print("CHIAVE:" + input_key)
                                 try:
-                                    input_value = inputitem.get("value")
+                                    input_value = inputitem.get("value") 
                                 except:
                                     pass
+                                print("VALORE:" , input_value or "")
                                 try:
-                                    if not input_value or input_value == "":
+                                    if input_value is None:# or input_value == "":
+                                        print("cientro")
                                         input_value = \
                                             SelfAssessment().get_self_assessment(self.get_probe(), self.get_cm_id())[ti_id][input_key]
                                         pass

@@ -15,6 +15,7 @@ class SelfAssessment(Singleton):
 
     def configure(self, basedir):
         self.basedir = basedir if basedir[-1] == "/" else basedir + "/"
+        super(SelfAssessment, self).configure()
 
     @Singleton._if_configured(SelfAssessmentException)
     def __load_self_assessment(self, probename, cmid):
@@ -28,26 +29,33 @@ class SelfAssessment(Singleton):
         except IOError:
             raise SelfAssessmentException("Self Assessment file for probe " + probename + "does not exist")
 
-        self.cache[probename] = {}
+        self.cache[cmid][probename] = {}
         for section in parser.sections():
-            self.cache[probename][str(section)] = {}
+            self.cache[cmid][probename][str(section)] = {}
             for key, value in parser.items(section):
-                self.cache[probename][str(section)][str(key)] = str(value)
+                self.cache[cmid][probename][str(section)][str(key)] = str(value)
         return True
 
     @Singleton._if_configured(SelfAssessmentException)
-    def get_self_assessment(self, probename):
+    def get_self_assessment(self, probename, cm_id):
         try:
-            if isinstance(self.cache[probename], dict):
-                return self.cache[probename]
+            try:
+                if not isinstance(self.cache[cm_id], dict):
+                    self.cache[cm_id] = {}
+            except KeyError, e:
+                self.cache[cm_id] = {}
+            
+            #print(self.cache)
+            if isinstance(self.cache[cm_id][probename], dict):
+                return self.cache[cm_id][probename]
             else:
-                if self.__load_self_assessment(probename):
-                    return self.get_self_assessment(probename)
+                if self.__load_self_assessment(probename, cm_id):
+                    return self.get_self_assessment(probename, cm_id)
         except:
-            self.cache[probename] = self.__load_self_assessment(probename)
-            return self.get_self_assessment(probename)
+            self.cache[cm_id][probename] = self.__load_self_assessment(probename, cm_id)
+            return self.get_self_assessment(probename, cm_id)
 
     @Singleton._if_configured(SelfAssessmentException)
-    def reload_cache_for_probe(self, probename):
-        self.cache[probename] = self.__load_self_assessment(probename)
+    def reload_cache_for_probe(self, probename, cmid):
+        self.cache[cmid][probename] = self.__load_self_assessment(probename, cmid)
         return
